@@ -1,0 +1,33 @@
+# Local install backups
+.local-backups/
+
+# .NET build outputs
+bin/
+obj/
+
+# User/local config and secrets
+*.user
+*.suo
+*.env
+*.env.*
+*.key
+*.pem
+*.pfx
+*.p12
+*.token
+*.secret
+credentials*
+secrets*
+
+# Logs and crash dumps
+*.log
+*.dmp
+logs/
+crash/
+crashes/
+
+# Windows/editor noise
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
