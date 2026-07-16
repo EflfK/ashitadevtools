@@ -90,6 +90,20 @@ The MCP server rejects non-`127.0.0.1` base URLs.
 - `addon_reload(name)` - queues exactly one `/addon reload <validated-name>`.
 - `ashita_log_tail(lines = 100)` - returns a bounded tail of the current character's local Ashita chat log.
 
+If the MCP server cannot reach the in-game AshitaDevTools addon, failed tool responses include structured recovery fields so an AI client can tell the user exactly what to run in game:
+
+```json
+{
+  "ok": false,
+  "baseUrl": "http://127.0.0.1:19772",
+  "error": "Could not read status from AshitaDevTools...",
+  "errorKind": "bridge_unreachable",
+  "manualLoadCommand": "/addon load ashitadevtools",
+  "manualStatusCommand": "/adt status",
+  "recoveryHint": "Run /addon load ashitadevtools in the Ashita in-game chat, then retry the MCP tool. If it is already loaded, run /adt status in game to inspect the local listener."
+}
+```
+
 Manual MCP checks after loading the addon in game:
 
 ```text
