@@ -6,6 +6,8 @@ public static partial class AshitaDevToolsBridgeClient
 {
     private const string DefaultBaseUrl = "http://127.0.0.1:19772";
     private const int MaxLogTailLines = 500;
+    internal const string ManualLoadCommand = "/addon load ashitadevtools";
+    internal const string ManualStatusCommand = "/adt status";
 
     private static readonly HttpClient Http = new()
     {
@@ -69,9 +71,9 @@ public static partial class AshitaDevToolsBridgeClient
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException)
         {
-            return BridgeResponse.Failure(
+            return BridgeResponse.BridgeUnavailable(
                 baseUri.Uri.ToString().TrimEnd('/'),
-                $"Could not reach AshitaDevTools at {baseUri.Uri}{endpoint}. Load it with /addon load ashitadevtools. {ex.Message}");
+                $"Could not reach AshitaDevTools at {baseUri.Uri}{endpoint}. The AshitaDevTools addon may not be loaded in game. Manual load command: {ManualLoadCommand}. {ex.Message}");
         }
     }
 
@@ -90,9 +92,9 @@ public static partial class AshitaDevToolsBridgeClient
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException)
         {
-            return BridgeResponse.Failure(
+            return BridgeResponse.BridgeUnavailable(
                 baseUri.Uri.ToString().TrimEnd('/'),
-                $"Could not read {label} from AshitaDevTools at {baseUri.Uri}{endpoint}. Load it with /addon load ashitadevtools. {ex.Message}");
+                $"Could not read {label} from AshitaDevTools at {baseUri.Uri}{endpoint}. The AshitaDevTools addon may not be loaded in game. Manual load command: {ManualLoadCommand}. {ex.Message}");
         }
     }
 
@@ -176,11 +178,26 @@ public sealed record BridgeResponse(
     bool Ok,
     string BaseUrl,
     string? Json,
-    string? Error)
+    string? Error,
+    string? ErrorKind = null,
+    string? ManualLoadCommand = null,
+    string? ManualStatusCommand = null,
+    string? RecoveryHint = null)
 {
     public static BridgeResponse Success(string baseUrl, string json) =>
         new(true, baseUrl, json, null);
 
     public static BridgeResponse Failure(string baseUrl, string error) =>
         new(false, baseUrl, null, error);
+
+    public static BridgeResponse BridgeUnavailable(string baseUrl, string error) =>
+        new(
+            false,
+            baseUrl,
+            null,
+            error,
+            "bridge_unreachable",
+            AshitaDevToolsBridgeClient.ManualLoadCommand,
+            AshitaDevToolsBridgeClient.ManualStatusCommand,
+            $"Run {AshitaDevToolsBridgeClient.ManualLoadCommand} in the Ashita in-game chat, then retry the MCP tool. If it is already loaded, run {AshitaDevToolsBridgeClient.ManualStatusCommand} in game to inspect the local listener.");
 }
